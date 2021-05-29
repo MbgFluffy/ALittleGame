@@ -4,19 +4,19 @@ using UnityEngine;
 
 public class PlayerController2D : MonoBehaviour
 {
-    [SerializeField] private float jumpForce = 400f;                             // Amount of force added when the player jumps.
-    [SerializeField] private float wallJumpForce = 400f;                         // Amount of force added when the player jumps from a wall.
-    [SerializeField] private float movementSpeed = 10f;                          // Movement speed of the player.
-    [SerializeField] private float limitFallSpeed = 25f;                         // Limit fall speed
-    [Range(0f, 0.99f)] [SerializeField] private float wallGrabSmoothing = 0.7f; // Smoothens the stop on a wall while wallsliding.                 
-    [Range(0, .3f)] [SerializeField] private float movementSmoothingMidAir = .05f;     // How much to smooth out the movement while in air.
-    [SerializeField] private bool airControl = true;                             // Whether or not a player can steer while jumping;
-    [SerializeField] private LayerMask whatIsGround;                             // A mask determining what is ground to the character
-    [SerializeField] private Transform groundCheck;                              // A position marking where to check if the player is grounded.
+    [SerializeField] private float jumpForce = 400f;                                    // Amount of force added when the player jumps.
+    [SerializeField] private float wallJumpForce = 400f;                                // Amount of force added when the player jumps from a wall.
+    [SerializeField] private float movementSpeed = 10f;                                 // Movement speed of the player.
+    [SerializeField] private float limitFallSpeed = 25f;                                // Limit fall speed
+    [Range(0f, 0.99f)] [SerializeField] private float wallGrabSmoothing = 0.7f;         // Smoothens the stop on a wall while wallsliding.                 
+    [Range(0, .3f)] [SerializeField] private float movementSmoothingMidAir = .05f;      // How much to smooth out the movement while in air.
+    [SerializeField] private bool airControl = true;                                    // Whether or not a player can steer while jumping;
+    [SerializeField] private LayerMask whatIsGround;                                    // A mask determining what is ground to the character
+    [SerializeField] private Transform groundCheck;                                     // A position marking where to check if the player is grounded.
     [SerializeField] private Transform wallCheck;
     [SerializeField] private Transform wallGrabCheck;
     [SerializeField] private float dashForce = 25f;
-    [SerializeField] private int jumpCount = 1;                                  // How many times the player can jump mid-air.
+    [SerializeField] private int jumpCount = 1;                                         // How many times the player can jump mid-air.
 
     const float groundedRadius = .2f; // Radius of the overlap circle to determine if grounded
     private bool grounded;            // Whether or not the player is grounded.
@@ -26,20 +26,21 @@ public class PlayerController2D : MonoBehaviour
     private Vector2 jumpDirection = new Vector2(0, 1); // Direction in which the jump force will be added.
     private Vector2 wallJumpDirection = new Vector2(1, 1); // Direction in which the wall jump force will be added.
 
-    private bool canMove = true; //If player can move
+    private bool canMove = true; // If player can move
     private bool canDash = true;
     private bool canWallGrab = true;
-    private bool isDashing = false; //If player is dashing
-    private bool isWall = false; //If there is a wall in front of the player
-    private bool isWallGrabbing = false; //If player is sliding on a wall
-    private bool isSliding = false; //If slipping down a wall
-    private bool oldWallGrab = false; //If player is grabbing on a wall in the previous frame
-    private bool canCheck = false; //For check if player is wallsliding
-    private float wallPosition; //determins if the wall is left or right to the player
+    private bool isDashing = false; // If player is dashing
+    private bool isWall = false; // If there is a wall in front of the player
+    private bool isWallGrabbing = false; // If player is sliding on a wall
+    private bool isSliding = false; // If slipping down a wall
+    private bool oldWallGrab = false; // If player is grabbing on a wall in the previous frame
+    private bool canCheck = false; // For check if player is wallsliding
+    private float wallPosition; // Determins if the wall is left or right to the player
     private int jumpsLeft;
 
-    private Coroutine crWallGrabbing; //Coroutine handling the wallsliding time
-    private Coroutine crWallGrabCooldown; //Time until WallGrab is possible again
+    private Coroutine crWallGrabbing; // Coroutine handling the wallslide
+    private Coroutine crWallGrabCooldown; // Time until WallGrab is possible again
+    private Coroutine crDash; // Coroutine handling the dash
 
     // Start is called before the first frame update
     private void Awake()
@@ -50,10 +51,9 @@ public class PlayerController2D : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        /*Debug.Log("is wall sliding: " + isWallGrabbing);
+        Debug.Log("is wall sliding: " + isWallGrabbing);
         Debug.Log("wallslide detect: " + canWallGrab);
-        Debug.Log("oldwallgrab: " + oldWallGrab);*/
-        Debug.Log("grounded: " + grounded);
+        Debug.Log("oldwallgrab: " + oldWallGrab);
 
         HandleWallGrabbing();
     }
@@ -129,7 +129,10 @@ public class PlayerController2D : MonoBehaviour
             if (isWallGrabbing && wallPosition * move < 0)
                 EndWallGrab();
 
-            if (grounded && !(isWall && move * transform.localScale.x > 0)) // movement on ground
+            if (dash)
+                crDash = StartCoroutine(DashCooldown());
+
+            if (grounded && !(isWall && move * transform.localScale.x > 0)) //movement on ground
             {
                 rb2D.velocity = new Vector2(move * movementSpeed, rb2D.velocity.y);
             }
@@ -144,6 +147,11 @@ public class PlayerController2D : MonoBehaviour
             {
                 rb2D.gravityScale = 0;
                 rb2D.velocity = new Vector2(0, rb2D.velocity.y * wallGrabSmoothing);
+            }
+
+            if (isDashing)
+            {
+                rb2D.velocity = new Vector2(transform.localScale.x * dashForce, 0);
             }
 
             if (isSliding)
@@ -242,5 +250,15 @@ public class PlayerController2D : MonoBehaviour
         oldWallGrab = true;
         yield return new WaitForSeconds(1f);
         oldWallGrab = false;
+    }
+
+    IEnumerator DashCooldown()
+    {
+        isDashing = true;
+        canDash = false;
+        yield return new WaitForSeconds(0.1f);
+        isDashing = false;
+        yield return new WaitForSeconds(0.5f);
+        canDash = true;
     }
 }
