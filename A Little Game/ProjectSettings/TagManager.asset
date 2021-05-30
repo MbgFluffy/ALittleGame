@@ -17,8 +17,8 @@ TagManager:
   - MapBounds
   - Player
   - Companion
-  - 
-  - 
+  - Enemy
+  - Ground
   - 
   - 
   - 

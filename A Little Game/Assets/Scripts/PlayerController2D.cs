@@ -17,6 +17,7 @@ public class PlayerController2D : MonoBehaviour
     [SerializeField] private Transform wallGrabCheck;
     [SerializeField] private float dashForce = 25f;
     [SerializeField] private int jumpCount = 1;                                         // How many times the player can jump mid-air.
+    [SerializeField] private int dashCount = 1;                                         // How many time the player can dash until back on ground.
 
     const float groundedRadius = .2f; // Radius of the overlap circle to determine if grounded
     private bool grounded;            // Whether or not the player is grounded.
@@ -37,6 +38,7 @@ public class PlayerController2D : MonoBehaviour
     private bool canCheck = false; // For check if player is wallsliding
     private float wallPosition; // Determins if the wall is left or right to the player
     private int jumpsLeft;
+    private int dashesLeft;
 
     private Coroutine crWallGrabbing; // Coroutine handling the wallslide
     private Coroutine crWallGrabCooldown; // Time until WallGrab is possible again
@@ -106,6 +108,8 @@ public class PlayerController2D : MonoBehaviour
             {
                 grounded = true;
                 jumpsLeft = jumpCount;
+                dashesLeft = dashCount;
+                EndWallGrab();
             }
         }
     }
@@ -126,10 +130,10 @@ public class PlayerController2D : MonoBehaviour
                 Flip();
             }
 
-            if (isWallGrabbing && wallPosition * move < 0)
-                EndWallGrab();
+           /* if (isWallGrabbing && wallPosition * move < 0)  //ability to end wallgrab wenn walking off the wall
+                EndWallGrab();*/
 
-            if (dash)
+            if (dash && canDash && dashesLeft > 0)
                 crDash = StartCoroutine(DashCooldown());
 
             if (grounded && !(isWall && move * transform.localScale.x > 0)) //movement on ground
@@ -193,7 +197,7 @@ public class PlayerController2D : MonoBehaviour
     }
 
     private void Jump(Vector2 direction, float force)
-    {
+    { 
         rb2D.velocity = new Vector2(rb2D.velocity.x, 0);
         rb2D.AddForce(direction * force);
     }
@@ -215,6 +219,7 @@ public class PlayerController2D : MonoBehaviour
 
     private void StartWallGrab()
     {
+        dashesLeft = dashCount;
         jumpsLeft = jumpCount;
         crWallGrabbing = StartCoroutine(WallGrab());
     }
@@ -254,6 +259,7 @@ public class PlayerController2D : MonoBehaviour
 
     IEnumerator DashCooldown()
     {
+        dashesLeft--;
         isDashing = true;
         canDash = false;
         yield return new WaitForSeconds(0.1f);
