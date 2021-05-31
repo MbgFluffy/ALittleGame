@@ -5,6 +5,7 @@ using UnityEngine;
 public class PlayerInputHandler : MonoBehaviour
 {
     public PlayerController2D controller;
+    public Attack attack;
 
     public float runSpeed = 40f;
 
@@ -59,6 +60,11 @@ public class PlayerInputHandler : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.R))
         {
             transform.position = position;
+        }
+
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            attack.Melee();
         }
 
     }

@@ -168,6 +168,7 @@ TilemapRenderer:
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
@@ -6141,6 +6142,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
+  m_PresetInfoIsWorld: 0
 --- !u!223 &1970867689
 Canvas:
   m_ObjectHideFlags: 0
@@ -6308,10 +6310,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 7909472565481481688, guid: d90da2226ba6ce7408c635ee9336dd92, type: 3}
-      propertyPath: whatIsGround.m_Bits
-      value: 4096
-      objectReference: {fileID: 0}
     - target: {fileID: 7909472565481481689, guid: d90da2226ba6ce7408c635ee9336dd92, type: 3}
       propertyPath: cam
       value: 

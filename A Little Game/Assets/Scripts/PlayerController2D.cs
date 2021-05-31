@@ -44,6 +44,8 @@ public class PlayerController2D : MonoBehaviour
     private Coroutine crWallGrabCooldown; // Time until WallGrab is possible again
     private Coroutine crDash; // Coroutine handling the dash
 
+    public Animator playerAnimator;
+
     // Start is called before the first frame update
     private void Awake()
     {
@@ -139,6 +141,7 @@ public class PlayerController2D : MonoBehaviour
             if (grounded && !(isWall && move * transform.localScale.x > 0)) //movement on ground
             {
                 rb2D.velocity = new Vector2(move * movementSpeed, rb2D.velocity.y);
+                playerAnimator.SetFloat("Speed", Mathf.Abs(move));
             }
 
             if(airControl && !grounded && move != 0) //movement while in air, when airControll is on
@@ -226,7 +229,9 @@ public class PlayerController2D : MonoBehaviour
 
     private void EndWallGrab()
     {
+        if(crWallGrabbing != null)
         StopCoroutine(crWallGrabbing);
+
         isSliding = false;
         isWallGrabbing = false;
         crWallGrabCooldown = StartCoroutine(WallGrabCooldown());
