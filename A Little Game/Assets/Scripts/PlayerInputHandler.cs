@@ -64,7 +64,7 @@ public class PlayerInputHandler : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.K))
         {
-            attack.Melee();
+            attack.DoAttack();
         }
 
     }

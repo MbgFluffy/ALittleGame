@@ -45,21 +45,39 @@ public class PlayerController2D : MonoBehaviour
     private Coroutine crDash; // Coroutine handling the dash
 
     public Animator playerAnimator;
+    private AnimationManager AM;
+    private Attack attack;
 
     // Start is called before the first frame update
     private void Awake()
     {
         rb2D = GetComponent<Rigidbody2D>();
+        AM = GetComponent<AnimationManager>();
+        attack = GetComponent<Attack>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        Debug.Log("is wall sliding: " + isWallGrabbing);
-        Debug.Log("wallslide detect: " + canWallGrab);
-        Debug.Log("oldwallgrab: " + oldWallGrab);
-
+            
         HandleWallGrabbing();
+
+        if (grounded && !attack.isAttacking)
+        {
+            if (rb2D.velocity.x != 0 && !isWall)
+            {
+                AM.ChangeAnimationState("Player_Run");
+            }
+            else
+            { 
+                AM.ChangeAnimationState("Player_Idle");
+            }
+        }
+
+        if (rb2D.velocity.y < 0 && !isWallGrabbing && !grounded && !attack.isAttacking)
+        {
+            AM.ChangeAnimationState("Player_Fall");
+        }
     }
 
     private void FixedUpdate()
@@ -132,16 +150,19 @@ public class PlayerController2D : MonoBehaviour
                 Flip();
             }
 
-           /* if (isWallGrabbing && wallPosition * move < 0)  //ability to end wallgrab wenn walking off the wall
-                EndWallGrab();*/
+            /* if (isWallGrabbing && wallPosition * move < 0)  //ability to end wallgrab wenn walking off the wall
+                 EndWallGrab();*/
 
-            if (dash && canDash && dashesLeft > 0)
+            if (dash && canDash && dashesLeft > 0 && !attack.isAttacking)
                 crDash = StartCoroutine(DashCooldown());
 
             if (grounded && !(isWall && move * transform.localScale.x > 0)) //movement on ground
             {
                 rb2D.velocity = new Vector2(move * movementSpeed, rb2D.velocity.y);
-                playerAnimator.SetFloat("Speed", Mathf.Abs(move));
+            }
+            else if (grounded)
+            {
+                rb2D.velocity = new Vector2(0, rb2D.velocity.y);
             }
 
             if(airControl && !grounded && move != 0) //movement while in air, when airControll is on
@@ -166,7 +187,7 @@ public class PlayerController2D : MonoBehaviour
                 //rb2D.AddForce(new Vector2(0, -100));
             }
 
-            if (jump)
+            if (jump && !attack.isAttacking)
             {
                 if (grounded)
                 {
@@ -203,6 +224,7 @@ public class PlayerController2D : MonoBehaviour
     { 
         rb2D.velocity = new Vector2(rb2D.velocity.x, 0);
         rb2D.AddForce(direction * force);
+        AM.ChangeAnimationState("Player_Jump");
     }
 
     private void HandleWallGrabbing()
@@ -225,6 +247,7 @@ public class PlayerController2D : MonoBehaviour
         dashesLeft = dashCount;
         jumpsLeft = jumpCount;
         crWallGrabbing = StartCoroutine(WallGrab());
+        AM.ChangeAnimationState("Player_Wallgrab");
     }
 
     private void EndWallGrab()
